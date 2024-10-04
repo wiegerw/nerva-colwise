@@ -1,0 +1,12 @@
+project nerva/examples
+   : requirements
+       <library>/nerva//nervalib
+       <linkflags>-lpython3.12  # TODO: find a better way to do this
+   ;
+
+exe subnormal_numbers : subnormal_numbers.cpp ;
+
+install dist
+  :
+    subnormal_numbers
+  ;

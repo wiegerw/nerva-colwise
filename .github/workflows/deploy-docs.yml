@@ -1,0 +1,37 @@
+name: Deploy AsciiDoc documentation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v3
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.0'
+
+      - name: Install Asciidoctor
+        run: |
+          gem install asciidoctor
+          gem install asciidoctor-bibtex
+          gem install rouge
+
+      - name: Compile Asciidoc
+        run: |
+          mkdir -p output_directory
+          asciidoctor -r asciidoctor-bibtex -a source-highlighter=rouge -D ./output_directory ./doc/*.adoc
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./output_directory
+          destination_dir: doc

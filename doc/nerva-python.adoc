@@ -1,0 +1,338 @@
+= The Nerva-Rowwise Python manual
+:copyright: Copyright 2024 Wieger Wesselink
+:author: Wieger Wesselink
+:email: j.w.wesselink@tue.nl
+:doctype: book
+:toc: left
+:toc2:
+:toc-title: pass:[<h3>Contents</h3>]
+:css-signature: demo
+:stem: latexmath
+:icons: font
+:description: Documentation for the nerva-rowwise repository.
+:imagesdir: images
+:bibliography: nerva.bib
+:library: pass:q[_Nerva-Rowwise Python Library_]
+:mlptool: mlp.py
+:sgd_algorithm: StochasticGgradientDescentAlgorithm
+:cpp: C&#43;&#43;
+
+ifdef::env-github[]
+:note-caption: :information_source:
+endif::[]
+
+++++
+<style>
+  .small-code .content pre {
+      font-size: 0.7em;
+  }
+</style>
+++++
+
+== Introduction
+This document describes the implementation of the {library}. This library features a Python module named `nerva`, that is built using Python bindings to the
+https://wiegerw.github.io/nerva-rowwise/doc/nerva-cpp.html[Nerva-Rowwise C++ Library]. Note that the matrix type used internally in the `nerva` module is `torch.Tensor`, to ensure an easy integration with PyTorch.
+
+== Installation
+The {library} Python bindings can be installed via `pip`. The installation is done via a https://github.com/wiegerw/nerva-rowwise/blob/main/python/setup.py[setup.py] script. The script has several dependencies, that need to be resolved using environment variables.
+
+=== Dependencies
+- Intel MKL library https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl.html[oneMKL]
+- FMT https://github.com/fmtlib/fmt
+- Eigen https://eigen.tuxfamily.org/
+- pybind11 https://github.com/pybind/pybind11
+
+The MKL dependency can be resolved by setting the `MKL_ROOT` environment variable, or by setting the `ONEAPI_ROOT` environment variable.
+
+To resolve the FMT, Eigen and pybind11 dependencies, the environment variables
+`EIGEN_INCLUDE_DIR`, `FMT_INCLUDE_DIR` and `PYBIND11_INCLUDE_DIR` can be set.
+
+An alternative solution is to use CMake to resolve these three dependencies, see also the
+link:nerva-cpp.adoc#cmake-build[CMake install] section in the C++ documentation. The `cmake` command causes the three libraries to be downloaded automatically in the `_deps` subdirectory of the CMake build directory. After that it is sufficient to set the environment variable `CMAKE_DEPS_DIR`.
+
+[[pip-install]]
+The `nerva` Python module can then be installed using
+[source]
+----
+cd python
+pip install .
+----
+
+== Command line tools
+The tool `mlp.py` can be used to do training experiments with multilayer perceptrons.
+
+=== The tool mlp.py
+An example invocation of the `mlp.py` tool is
+
+[source]
+----
+include::../examples/cifar10_sparse_python.sh[tag=doc]
+----
+This will train a CIFAR-10 model using an MLP consisting of three layers with activation functions ReLU, ReLU and no activation. Note that it automatically downloads the CIFAR-10 dataset in the folder `../data` if it doesn't yet exist.
+
+The output may look like this:
+[.small-code]
+[source]
+----
+=== Nerva python model ===
+Sequential(
+  Sparse(output_size=1024, density=0.042382812500000006, activation=ReLU(), optimizer=Nesterov(0.9), weight_initializer=Xavier),
+  Sparse(output_size=1024, density=0.06357421875000001, activation=ReLU(), optimizer=Nesterov(0.9), weight_initializer=Xavier),
+  Dense(output_size=10, activation=NoActivation(), optimizer=Nesterov(0.9), weight_initializer=Xavier, dropout=0.0)
+)
+loss = SoftmaxCrossEntropyLoss()
+scheduler = ConstantScheduler(lr=0.009999999776482582)
+layer densities: 133325/3145728 (4.238%), 66662/1048576 (6.357%), 10240/10240 (100%)
+
+
+=== Training Nerva model ===
+epoch   0  lr: 0.01000000  loss: 2.30246344  train accuracy: 0.10724000  test accuracy: 0.11390000  time: 0.00000000s
+epoch   1  lr: 0.01000000  loss: 1.89570341  train accuracy: 0.32142000  test accuracy: 0.32030000  time: 4.15395873s
+epoch   2  lr: 0.01000000  loss: 1.66956488  train accuracy: 0.40332000  test accuracy: 0.40220000  time: 3.60670412s
+epoch   3  lr: 0.01000000  loss: 1.53549386  train accuracy: 0.45616000  test accuracy: 0.44940000  time: 3.24853144s
+epoch   4  lr: 0.01000000  loss: 1.43913857  train accuracy: 0.49054000  test accuracy: 0.47920000  time: 3.29059404s
+epoch   5  lr: 0.01000000  loss: 1.36875251  train accuracy: 0.51380000  test accuracy: 0.49070000  time: 3.83244992s
+epoch   6  lr: 0.01000000  loss: 1.29761993  train accuracy: 0.54106000  test accuracy: 0.50710000  time: 3.59350869s
+epoch   7  lr: 0.01000000  loss: 1.23931273  train accuracy: 0.56170000  test accuracy: 0.51690000  time: 3.96624650s
+----
+
+include::nerva-cpp.adoc[tags=mlptool-options]
+
+include::nerva-cpp.adoc[tags=general-options]
+
+include::nerva-cpp.adoc[tags=random-generator-options]
+
+include::nerva-cpp.adoc[tags=layer-configuration-options]
+
+include::nerva-cpp.adoc[tags=training-configuration-options]
+
+include::nerva-cpp.adoc[tags=pruning-options]
+
+include::nerva-cpp.adoc[tags=computation-options]
+
+include::nerva-cpp.adoc[tags=dataset-options]
+
+include::nerva-cpp.adoc[tags=miscellaneous-options]
+
+== Overview of the code
+This section gives an overview of the Python code in the
+{library}, and some explanations about the code.
+
+=== Number type
+The {library} uses 32-bit floats as its number type. The C++ library also supports 64-bit floats.
+
+=== Module contents
+The most important files in the `nerva` module are given in the table below.
+
+|===
+|File |Description
+
+|`link:https://github.com/wiegerw/nerva-rowwise/blob/main/python/nerva/multilayer_perceptron.py[multilayer_perceptron.py]`
+|A multilayer perceptron class.
+
+|`link:https://github.com/wiegerw/nerva-rowwise/blob/main/python/nerva/layers.py[layers.py]`
+|Neural network layers.
+
+|`link:https://github.com/wiegerw/nerva-rowwise/blob/main/python/nerva/activation_functions.py[activation_functions.py]`
+|Activation functions.
+
+|`link:https://github.com/wiegerw/nerva-rowwise/blob/main/python/nerva/loss_functions.py[loss_functions.py]`
+|Loss functions.
+
+|`link:https://github.com/wiegerw/nerva-rowwise/blob/main/python/nerva/weights.py[weights.py]`
+|Weight initialization functions.
+
+|`link:https://github.com/wiegerw/nerva-rowwise/blob/main/python/nerva/optimizers.py[optimizers.py]`
+|Optimizer functions, for updating neural network parameters using their gradients.
+
+|`link:https://github.com/wiegerw/nerva-rowwise/blob/main/python/nerva/learning_rate_schedulers.py[learning_rate_schedulers.py]`
+|Learning rate schedulers, for updating the learning rate during training.
+
+|`link:https://github.com/wiegerw/nerva-rowwise/blob/main/python/nerva/training.py[training.py]`
+|A stochastic gradient descent algorithm.
+
+|`link:https://github.com/wiegerw/nerva-rowwise/blob/main/python/nerva/prune.py[prune.py]`
+|Algorithms for pruning sparse weight matrices. This is used for dynamic sparse training.
+
+|`link:https://github.com/wiegerw/nerva-rowwise/blob/main/python/nerva/grow.py[grow.py]`
+|Algorithms for (re-)growing sparse weights. This is used for dynamic sparse training.
+|===
+
+=== Classes
+
+==== Class MultilayerPerceptron
+A multilayer perceptron (MLP) is modeled using the class `MultilayerPerceptron`. It contains a list of layers, and has member functions `feedforward`, `backpropagate` and `optimize` that can be used for training the neural network. Constructing an MLP can be done as follows:
+[[construct_mlp1]]
+[.small-code]
+[source,cpp]
+----
+include::../python/tests/multilayer_perceptron_test.py[tag=construct1]
+----
+This creates an MLP with three linear layers. The parameter `sizes` contains the input and output sizes of the three layers. The weights are initialized using Xavier.
+
+Another way to construct MLPs is provided by the function `make_layers`, that offers a string based interface. An example is given in the code below:
+[[construct_mlp2]]
+[.small-code]
+[source,cpp]
+----
+include::../python/tests/multilayer_perceptron_test.py[tag=construct2]
+----
+Note that optimizers should be specified for linear layers, but also for batch normalization layers.
+
+NOTE: A `MultilayerPerceptron` needs to be compiled before it can be used. This is done by calling `M.compile(batch_size)`. As a result of this call, a C++ object is created that contains the actual model. A reference to this object is stored in the attribute `_model`.
+
+==== Class Layer
+The class `Layer` is the base class of all neural network layers. There are three different types of layers:
+
+|===
+|Layer |Description
+
+|`Dense`
+|A dense linear layer.
+
+|`Sparse`
+|A sparse linear layer.
+
+|`BatchNormalization`
+|A batch normalization layer.
+|===
+
+A `Dense` layer has a constructor with the following parameters:
+[.small-code]
+[source,python]
+----
+include::../python/nerva/layers.py[tag=dense_constructor]
+----
+This only sets a number of attributes of the layer. Before using the layer the `compile` function must be called:
+[.small-code]
+[source,python]
+----
+include::../python/nerva/layers.py[tag=dense_compile]
+----
+As a result of this call a C++ object is created that contains the actual layer. It is stored in the attribute `_layer`. The normal workflow is to call the `compile` method of the multilayer perceptron, which will also compile the layers, as illustrated in
+<<construct_mlp1>> and <<construct_mlp2>>.
+
+A `Sparse` layer has an additional parameter `density` in the interval stem:[$$[0,1]$$], that determines the fraction of weights that are in the support. Sparse layers do not support dropout.
+
+A `BatchNormalization` layer has the following constructor:
+[.small-code]
+[source,python]
+----
+include::../python/nerva/layers.py[tag=batchnormalization_constructor]
+----
+The output size may be omitted, since by definition it is the same as the input size.
+
+==== Class LossFunction
+The class `LossFunction` is the base class of all loss functions. There are five loss functions available:
+
+* `SquaredErrorLoss`
+
+* `CrossEntropyLoss`
+
+* `LogisticCrossEntropyLoss`
+
+* `NegativeLogLikelihoodLoss`
+
+* `SoftmaxCrossEntropyLoss`
+
+See the https://wiegerw.github.io/nerva-rowwise/pdf/nerva-library-specifications.pdf[Nerva library specifications] document for precise definitions of these loss functions.
+
+==== Activation functions
+The class `ActivationFunction` is the base class of all activation functions. The following activation functions are available:
+
+* `ReLU`
+* `Sigmoid`
+* `Softmax`
+* `LogSoftmax`
+* `TReLU`
+* `LeakyReLU`
+* `AllReLU`
+* `SReLU`
+* `HyperbolicTangent`
+
+See the https://wiegerw.github.io/nerva-rowwise/pdf/nerva-library-specifications.pdf[Nerva library specifications] document for precise definitions of these activation functions.
+
+=== Accessing C++ data structures
+To a limited extent, the C++ data structures can be accessed in Python. In the file
+`link:https://github.com/wiegerw/nerva-rowwise/blob/main/python/tests/loss_test.py[loss_test.py]` it is demonstrated how to modify the weight matrices and bias vectors of dense layers via the `_layer` attribute:
+[.small-code]
+[source,python]
+----
+include::../python/tests/multilayer_perceptron_test.py[tag=layer-access]
+----
+The weight matrices of sparse layers are not yet fully exposed to Python.
+
+=== Training a neural network
+The class `StochasticGradientDescentAlgorithm` can be used to train a neural network. It takes as input a multilayer perceptron, a dataset, a loss function, a learning rate scheduler, and a struct containing options like the number of epochs. The main loop looks like this:
+[.small-code]
+[source,python]
+----
+for epoch in range(self.options.epochs):
+    self.on_start_epoch(epoch)
+
+    for batch_index, (X, T) in enumerate(self.train_loader):
+        self.on_start_batch(batch_index)
+        T = to_one_hot(T, num_classes)
+        Y = M.feedforward(X)
+        DY = self.loss.gradient(Y, T) / options.batch_size
+        M.backpropagate(Y, DY)
+        M.optimize(learning_rate)
+        self.on_end_batch(k)
+
+    self.on_end_epoch(epoch)
+
+self.on_end_training()
+----
+
+NOTE: We follow the PyTorch convention that the targets used for classification are provided as a one dimensional vector of integers. Using a call to `to_one_hot` this vector is transformed in to a one hot encoded boolean matrix of the same dimensions as the output `Y`.
+
+In every epoch, the dataset is divided into a number of batches. This is handled by the `DataLoader`, that creates batches `X` of a given batch size, with corresponding targets `T` (i.e. the expected outputs). Each batch goes through the three steps of stochastic gradient descent:
+
+. *feedforward:* Given an input batch `X` and
+the neural network parameters `Θ`, compute the
+output `Y`.
+. *backpropagation:* Given output `Y` corresponding to input `X` and targets `T`, compute the gradient  `DY` of `Y` with respect to the loss function. Then from `Y` and `DY`, compute the gradient `DΘ` of the parameters `Θ`.
+. *optimization:* Given the gradient `DΘ`, update
+the parameters `Θ`.
+
+include::nerva-cpp.adoc[tags=event-functions]
+
+[[on_start_epoch]]
+An example can be found in the tool `mlp`:
+[.small-code]
+[source,python]
+----
+include::../python/tools/mlp.py[tag=event]
+----
+
+include::nerva-cpp.adoc[tags=event-actions]
+
+include::nerva-cpp.adoc[tags=io]
+
+== Extending the library
+The {library} can be extended in several obvious ways, such as adding new layers, activation functions, loss functions, learning rate schedulers, and pruning or growing functions. However, the implementation of those extensions must be done in {cpp}, as documented in the section
+link:nerva-cpp.adoc#extending[Extending the library] of the {cpp} manual.
+After adding these components to {cpp}, they can be integrated in the `nerva` Python module.
+
+=== Adding a loss function
+As an example, we will explain how the loss function `SoftmaxCrossEntropyLoss` is added to the `nerva` Python module.
+
+* The first step is to define a C++ class `softmax_cross_entropy_loss` in the header file
+`link:https://github.com/wiegerw/nerva-rowwise/blob/main/include/nerva/neural_networks/loss_functions.h[loss_functions.h]`.
+
+* The next step is to add the class `softmax_cross_entropy_loss` to the Python bindings in the file `link:https://github.com/wiegerw/nerva-rowwise/blob/main/src/python-bindings.cpp[python-bindings.cpp]`:
+[.small-code]
+[source,python]
+----
+include::../src/python-bindings.cpp[tag=softmax_cross_entropy_loss]
+----
+
+* The third step is to define a Python class `SoftmaxCrossEntropyLoss` in the file `link:https://github.com/wiegerw/nerva-rowwise/blob/main/python/nerva/loss-functions.py[loss-functions.py]`:
+[.small-code]
+[source,python]
+----
+include::../python/nerva/loss_functions.py[tag=softmax_cross_entropy_loss]
+----
+Note that the Python class derives from the C++ class. In the same file, an entry to the function `parse_loss_function` should be added.
+
+* The last step is to reinstall the `nerva` Python module via `pip`, see <<pip-install>>.

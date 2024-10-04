@@ -1,0 +1,19 @@
+project nerva_tools
+   : requirements
+       <link>static
+       <library>/nerva//nervalib
+       <linkflags>-lpython3.12  # TODO: find a better way to do this
+   ;
+
+exe mlp : mlp.cpp : <scalar>float ;
+exe mlp_double : mlp.cpp : <scalar>double ;  # mlp with number type double
+exe mkl : mkl.cpp : <scalar>float ;
+exe inspect_npz : inspect_npz.cpp : <scalar>float ;
+
+install ../install/bin
+  :
+    mkl
+    mlp
+    mlp_double
+    inspect_npz
+  ;
