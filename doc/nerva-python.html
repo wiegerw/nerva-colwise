@@ -1454,14 +1454,7 @@ A <code>MultilayerPerceptron</code> needs to be compiled before it can be used. 
 </div>
 <div class="listingblock small-code">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="python">    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span>
-                 <span class="n">input_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">output_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">activation</span><span class="p">:</span> <span class="n">Activation</span><span class="o">=</span><span class="nc">NoActivation</span><span class="p">(),</span>
-                 <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span><span class="o">=</span><span class="nc">GradientDescent</span><span class="p">(),</span>
-                 <span class="n">weight_initializer</span><span class="p">:</span> <span class="n">WeightInitializer</span><span class="o">=</span><span class="nc">Xavier</span><span class="p">(),</span>
-                 <span class="n">dropout_rate</span><span class="p">:</span> <span class="nb">float</span><span class="o">=</span><span class="mi">0</span>
-                <span class="p">):</span></code></pre>
+<pre class="rouge highlight"><code data-lang="python"><span class="n">Unresolved</span> <span class="n">directive</span> <span class="ow">in</span> <span class="n">nerva</span><span class="o">-</span><span class="n">python</span><span class="p">.</span><span class="n">adoc</span> <span class="o">-</span> <span class="n">include</span><span class="p">::..</span><span class="o">/</span><span class="n">python</span><span class="o">/</span><span class="n">nerva</span><span class="o">/</span><span class="n">layers</span><span class="p">.</span><span class="n">py</span><span class="p">[</span><span class="n">tag</span><span class="o">=</span><span class="n">dense_constructor</span><span class="p">]</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1469,20 +1462,7 @@ A <code>MultilayerPerceptron</code> needs to be compiled before it can be used. 
 </div>
 <div class="listingblock small-code">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="python">    <span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="sh">"""</span><span class="s">
-        Creates a C++ object for the layer.
-
-        :param batch_size: the batch size
-        :return:
-        </span><span class="sh">"""</span>
-        <span class="n">activation</span> <span class="o">=</span> <span class="nf">print_activation</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">activation</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">self</span><span class="p">.</span><span class="n">dropout_rate</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="n">layer</span> <span class="o">=</span> <span class="n">nervalibrowwise</span><span class="p">.</span><span class="nf">make_dense_linear_layer</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">input_size</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">output_size</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">activation</span><span class="p">,</span> <span class="nf">str</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">weight_initializer</span><span class="p">),</span> <span class="nf">str</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">optimizer</span><span class="p">))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">layer</span> <span class="o">=</span> <span class="n">nervalibrowwise</span><span class="p">.</span><span class="nf">make_dense_linear_dropout_layer</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">input_size</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">output_size</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">dropout_rate</span><span class="p">,</span> <span class="n">activation</span><span class="p">,</span> <span class="nf">str</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">weight_initializer</span><span class="p">),</span> <span class="nf">str</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">optimizer</span><span class="p">))</span>
-        <span class="n">self</span><span class="p">.</span><span class="n">_layer</span> <span class="o">=</span> <span class="n">layer</span>
-        <span class="k">return</span> <span class="n">layer</span></code></pre>
+<pre class="rouge highlight"><code data-lang="python"><span class="n">Unresolved</span> <span class="n">directive</span> <span class="ow">in</span> <span class="n">nerva</span><span class="o">-</span><span class="n">python</span><span class="p">.</span><span class="n">adoc</span> <span class="o">-</span> <span class="n">include</span><span class="p">::..</span><span class="o">/</span><span class="n">python</span><span class="o">/</span><span class="n">nerva</span><span class="o">/</span><span class="n">layers</span><span class="p">.</span><span class="n">py</span><span class="p">[</span><span class="n">tag</span><span class="o">=</span><span class="n">dense_compile</span><span class="p">]</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1497,17 +1477,7 @@ A <code>MultilayerPerceptron</code> needs to be compiled before it can be used. 
 </div>
 <div class="listingblock small-code">
 <div class="content">
-<pre class="rouge highlight"><code data-lang="python">    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">,</span>
-                 <span class="n">input_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-                 <span class="n">output_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
-                 <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span> <span class="o">=</span> <span class="nc">GradientDescent</span><span class="p">()</span>
-                <span class="p">):</span>
-        <span class="n">self</span><span class="p">.</span><span class="n">input_size</span> <span class="o">=</span> <span class="n">input_size</span>
-        <span class="n">self</span><span class="p">.</span><span class="n">output_size</span> <span class="o">=</span> <span class="n">output_size</span>
-        <span class="n">self</span><span class="p">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
-        <span class="k">if</span> <span class="n">self</span><span class="p">.</span><span class="n">output_size</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="n">self</span><span class="p">.</span><span class="n">output_size</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">input_size</span>
-        <span class="k">assert</span> <span class="n">self</span><span class="p">.</span><span class="n">output_size</span> <span class="o">==</span> <span class="n">self</span><span class="p">.</span><span class="n">input_size</span></code></pre>
+<pre class="rouge highlight"><code data-lang="python"><span class="n">Unresolved</span> <span class="n">directive</span> <span class="ow">in</span> <span class="n">nerva</span><span class="o">-</span><span class="n">python</span><span class="p">.</span><span class="n">adoc</span> <span class="o">-</span> <span class="n">include</span><span class="p">::..</span><span class="o">/</span><span class="n">python</span><span class="o">/</span><span class="n">nerva</span><span class="o">/</span><span class="n">layers</span><span class="p">.</span><span class="n">py</span><span class="p">[</span><span class="n">tag</span><span class="o">=</span><span class="n">batchnormalization_constructor</span><span class="p">]</span></code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1816,9 +1786,7 @@ After adding these components to C&#43;&#43;, they can be integrated in the <cod
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>class SoftmaxCrossEntropyLoss(nervalibrowwise.softmax_cross_entropy_loss):
-    def __str__(self):
-        return 'SoftmaxCrossEntropyLoss()'</pre>
+<pre>Unresolved directive in nerva-python.adoc - include::../python/nerva/loss_functions.py[tag=softmax_cross_entropy_loss]</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1837,7 +1805,7 @@ After adding these components to C&#43;&#43;, they can be integrated in the <cod
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-07 08:23:46 UTC
+Last updated 2024-10-07 12:34:02 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
