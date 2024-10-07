@@ -30,44 +30,44 @@ inline
 void read_cifar10_slice(const std::string& filename, eigen::matrix& X, eigen::matrix& T, long start)
 {
   auto to_scalar = [](std::byte x)
-      {
-        return static_cast<scalar>(std::to_integer<std::uint8_t>(x));
-      };
+  {
+    return static_cast<scalar>(std::to_integer<std::uint8_t>(x));
+  };
 
-      auto bytes = read_binary_file(filename);
-      if (bytes.size() != 30730000)
-      {
-        throw std::runtime_error("The size of the file " + filename + " is not equal to 3073000");
-      }
+  auto bytes = read_binary_file(filename);
+  if (bytes.size() != 30730000)
+  {
+    throw std::runtime_error("The size of the file " + filename + " is not equal to 3073000");
+  }
 
-      NERVA_LOG(log::verbose) << ".";
+  NERVA_LOG(log::verbose) << ".";
 
-      for (long j = 0; j < 10000; j++)
-      {
-        auto first = bytes.begin() + j * 3073;
-        auto class_ = std::to_integer<int>(*first++);
-        if (class_ > 9)
-        {
-          throw std::runtime_error("Invalid class " + std::to_string(class_) + " encountered");
-        }
-        T(class_, start + j) = 1;
-        for (long i = 0; i < 3072; i++)
-        {
-          // store the data as R1 G1 B1 R2 G2 B2 ...
-          auto row = 3 * (i % 1024) + (i / 1024);
-          X(row, start + j) = to_scalar(*first++);
-        }
-      }
+  for (long j = 0; j < 10000; j++)
+  {
+    auto first = bytes.begin() + j * 3073;
+    auto class_ = std::to_integer<int>(*first++);
+    if (class_ > 9)
+    {
+      throw std::runtime_error("Invalid class " + std::to_string(class_) + " encountered");
     }
+    T(class_, start + j) = 1;
+    for (long i = 0; i < 3072; i++)
+    {
+      // store the data as R1 G1 B1 R2 G2 B2 ...
+      auto row = 3 * (i % 1024) + (i / 1024);
+      X(row, start + j) = to_scalar(*first++);
+    }
+  }
+}
 
 inline
 datasets::dataset load_cifar10_dataset(const std::string& directory, bool normalize=true)
 {
   datasets::dataset result;
-  result.Xtrain = eigen::matrix(50000, 3072);
-  result.Xtest = eigen::matrix(10000, 3072);
-  result.Ttrain = eigen::matrix::Zero(50000, 10);
-  result.Ttest = eigen::matrix::Zero(10000, 10);
+  result.Xtrain = eigen::matrix(3072, 50000);
+  result.Xtest = eigen::matrix(3072, 10000);
+  result.Ttrain = eigen::matrix::Zero(10, 50000);
+  result.Ttest = eigen::matrix::Zero(10, 10000);
 
   auto normalize_data = [](eigen::matrix& X)
   {
