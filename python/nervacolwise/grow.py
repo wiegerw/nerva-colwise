@@ -4,8 +4,8 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE or http://www.boost.org/LICENSE_1_0.txt)
 
-from nerva.layers import Sparse
-from nerva.weights import WeightInitializer
+from nervacolwise.layers import Sparse
+from nervacolwise.weights import WeightInitializer
 
 
 class GrowFunction(object):

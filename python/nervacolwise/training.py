@@ -4,24 +4,18 @@
 
 from typing import List
 
-import numpy as np
+import nervalibcolwise
 import torch
 
 from nervacolwise.datasets import DataLoader
-from nervacolwise.learning_rate import LearningRateScheduler
-from nervacolwise.loss import LossFunction
-from nervacolwise.layers import Sequential, print_model_info
+from nervacolwise.loss_functions import LossFunction
+from nervacolwise.multilayer_perceptron import MultilayerPerceptron, print_model_info
 from nervacolwise.utilities import MapTimer, pp
-import nervalibcolwise
 
 
-def to_numpy(x: torch.Tensor) -> np.ndarray:
-    return np.asfortranarray(x.detach().numpy().T)
-
-
-def to_one_hot(x: torch.LongTensor, n_classes: int):
-    one_hot = torch.zeros(n_classes, len(x), dtype=torch.float)
-    one_hot.scatter_(0, x.unsqueeze(0), 1)
+def to_one_hot(x: torch.LongTensor, num_classes: int):
+    one_hot = torch.zeros(len(x), num_classes, dtype=torch.float)
+    one_hot.scatter_(1, x.unsqueeze(1), 1)
     return one_hot
 
 
@@ -40,9 +34,8 @@ def compute_accuracy(M, data_loader: DataLoader):
     N = len(data_loader.dataset)  # N is the number of examples
     total_correct = 0
     for X, T in data_loader:
-        X = to_numpy(X)
         Y = torch.Tensor(M.feedforward(X))  # TODO: this conversion should be eliminated
-        predicted = Y.argmax(dim=0)  # the predicted classes for the batch
+        predicted = Y.argmax(dim=1)  # the predicted classes for the batch
         total_correct += (predicted == T).sum().item()
 
     nervalibcolwise.nerva_timer_resume()
@@ -55,7 +48,6 @@ def compute_loss(M, data_loader: DataLoader, loss: LossFunction):
     total_loss = 0.0
     num_classes = M.layers[-1].output_size
     for X, T in data_loader:
-        X = to_numpy(X)
         T = to_one_hot(T, num_classes)
         Y = M.feedforward(X)
         total_loss += loss.value(Y, T)
@@ -100,12 +92,12 @@ class SGDOptions(nervalibcolwise.sgd_options):
 
 class StochasticGradientDescentAlgorithm(object):
     def __init__(self,
-                 M: Sequential,
+                 M: MultilayerPerceptron,
                  train_loader: DataLoader,
                  test_loader: DataLoader,
                  options: SGDOptions,
                  loss: LossFunction,
-                 learning_rate: LearningRateScheduler
+                 learning_rate: float
                 ):
         self.M = M
         self.train_loader = train_loader
@@ -138,13 +130,13 @@ class StochasticGradientDescentAlgorithm(object):
         Event function that is called at the end of each epoch
         """
 
-    def on_start_batch(self) -> None:
+    def on_start_batch(self, batch_index: int) -> None:
         """
         Event function that is called at the start of each batch
         """
         pass
 
-    def on_end_batch(self) -> None:
+    def on_end_batch(self, batch_index: int) -> None:
         """
         Event function that is called at the end of each batch
         """
@@ -167,38 +159,34 @@ class StochasticGradientDescentAlgorithm(object):
 
         self.on_start_training()
 
-        lr = self.learning_rate(0)
-        compute_statistics(M, lr, self.loss, self.train_loader, self.test_loader, 0, 0.0, options.statistics)
+        compute_statistics(M, self.learning_rate, self.loss, self.train_loader, self.test_loader, 0, 0.0, options.statistics)
 
         for epoch in range(self.options.epochs):
             self.on_start_epoch(epoch)
             epoch_label = "epoch{}".format(epoch)
             self.timer.start(epoch_label)
 
-            lr = self.learning_rate(epoch)  # update the learning at the start of each epoch
-
-            for k, (X, T) in enumerate(self.train_loader):
-                self.on_start_batch()
-                X = to_numpy(X)
+            for batch_index, (X, T) in enumerate(self.train_loader):
+                self.on_start_batch(batch_index)
                 T = to_one_hot(T, num_classes)
                 Y = M.feedforward(X)
                 DY = self.loss.gradient(Y, T) / options.batch_size
 
                 if options.debug:
-                    print(f'epoch: {epoch} batch: {k}')
+                    print(f'epoch: {epoch} batch: {batch_index}')
                     print_model_info(M)
-                    pp("X", X.T)
-                    pp("Y", Y.T)
-                    pp("DY", DY.T)
+                    pp("X", X)
+                    pp("Y", Y)
+                    pp("DY", DY)
 
                 M.backpropagate(Y, DY)
-                M.optimize(lr)
+                M.optimize(self.learning_rate)
 
-                self.on_end_batch()
+                self.on_end_batch(batch_index)
 
             self.timer.stop(epoch_label)
             seconds = self.timer.seconds(epoch_label)
-            compute_statistics(M, lr, self.loss, self.train_loader, self.test_loader, epoch + 1, seconds, options.statistics)
+            compute_statistics(M, self.learning_rate, self.loss, self.train_loader, self.test_loader, epoch + 1, seconds, options.statistics)
 
             self.on_end_epoch(epoch)
 

@@ -10,12 +10,12 @@
 import unittest
 from typing import List
 
-from nerva.activation_functions import ReLU, NoActivation
-from nerva.layers import Dense, make_layers
-from nerva.loss_functions import SoftmaxCrossEntropyLoss
-from nerva.multilayer_perceptron import MultilayerPerceptron
-from nerva.optimizers import GradientDescent
-from nerva.weights import Xavier
+from nervacolwise.activation_functions import ReLU, NoActivation
+from nervacolwise.layers import Dense, make_layers
+from nervacolwise.loss_functions import SoftmaxCrossEntropyLoss
+from nervacolwise.multilayer_perceptron import MultilayerPerceptron
+from nervacolwise.optimizers import GradientDescent
+from nervacolwise.weights import Xavier
 
 import torch
 

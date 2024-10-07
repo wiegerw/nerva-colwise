@@ -1,4 +1,4 @@
-# Copyright 2022 - 2023 Wieger Wesselink.
+# Copyright 2022 - 2024 Wieger Wesselink.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE or http://www.boost.org/LICENSE_1_0.txt)
 
@@ -6,13 +6,13 @@ import os
 from pathlib import Path
 from typing import Dict, Tuple, Union
 
+import nervalibcolwise
 import numpy as np
 import torch
 import torchvision
 from torch.nn import functional as F
-from torchvision import transforms, datasets
+from torchvision import datasets, transforms
 
-import nervalibcolwise
 from nervacolwise.utilities import flatten_numpy
 
 
@@ -20,10 +20,10 @@ class DataSet(nervalibcolwise.DataSetView):
     def __init__(self, Xtrain, Ttrain, Xtest, Ttest):
         super().__init__(Xtrain.T, Ttrain.T, Xtest.T, Ttest.T)
         # store references to the original data to make sure it is not destroyed
-        self._keep_alive = [Xtrain, Ttrain, Xtest, Ttest]
+        self.keep_alive = [Xtrain, Ttrain, Xtest, Ttest]
 
 
-def create_cifar10_augmented_datasets(datadir='./data'):
+def create_cifar10_augmented_datasets(datadir: str):
     """
     Creates train and test datasets with augmentation.
     """
@@ -54,7 +54,7 @@ def create_cifar10_augmented_datasets(datadir='./data'):
     return train_dataset, test_dataset
 
 
-def create_cifar10_datasets(datadir='./data'):
+def create_cifar10_datasets(datadir: str):
     """
     Creates train and test datasets without augmentation.
     """
@@ -80,12 +80,38 @@ def create_cifar10_datasets(datadir='./data'):
     return train_dataset, test_dataset
 
 
+def create_mnist_datasets(datadir: str):
+    """
+    Creates train and test datasets for MNIST without augmentation.
+    """
+
+    normalize = transforms.Normalize((0.1307,), (0.3081,))  # Normalization values for MNIST
+
+    train_transform = transforms.Compose([
+        transforms.ToTensor(),
+        normalize,
+        transforms.Lambda(lambda x: torch.flatten(x)),  # Flattening the images to a 1D tensor
+    ])
+
+    test_transform = transforms.Compose([
+        transforms.ToTensor(),
+        normalize,
+        transforms.Lambda(lambda x: torch.flatten(x)),  # Flattening for test data as well
+    ])
+
+    train_dataset = datasets.MNIST(datadir, train=True, transform=train_transform, download=True)
+    test_dataset = datasets.MNIST(datadir, train=False, transform=test_transform, download=False)
+
+    return train_dataset, test_dataset
+
+
 def create_dataloaders(train_dataset, test_dataset, batch_size, test_batch_size) -> Tuple[torch.utils.data.DataLoader, torch.utils.data.DataLoader]:
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size,
         num_workers=8,
-        pin_memory=True, shuffle=True)
+        pin_memory=True,
+        shuffle=True)
 
     test_loader = torch.utils.data.DataLoader(
         test_dataset,
@@ -104,6 +130,12 @@ def create_cifar10_augmented_dataloaders(batch_size, test_batch_size, datadir):
 
 def create_cifar10_dataloaders(batch_size, test_batch_size, datadir):
     train_dataset, test_dataset = create_cifar10_datasets(datadir=datadir)
+    train_loader, test_loader = create_dataloaders(train_dataset, test_dataset, batch_size, test_batch_size)
+    return train_loader, test_loader
+
+
+def create_mnist_dataloaders(batch_size, test_batch_size, datadir):
+    train_dataset, test_dataset = create_mnist_datasets(datadir=datadir)
     train_loader, test_loader = create_dataloaders(train_dataset, test_dataset, batch_size, test_batch_size)
     return train_loader, test_loader
 
@@ -184,7 +216,7 @@ def extract_tensors_from_dataloader(dataloader: DataLoader) -> Tuple[torch.Tenso
     dataset = torch.cat(dataset, dim=0)
     targets = torch.cat(targets, dim=0)
 
-    return dataset.T, targets
+    return dataset, targets
 
 
 def create_npz_dataloaders(filename: str, batch_size: int) -> Tuple[TorchDataLoader, TorchDataLoader]:

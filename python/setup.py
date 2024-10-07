@@ -26,13 +26,13 @@ if CMAKE_DEPS_DIR:
     FMT_INCLUDE_DIR = CMAKE_DEPS_DIR / 'fmt-src' / 'include'
     PYBIND11_INCLUDE_DIR = CMAKE_DEPS_DIR / 'pybind11-src' / 'include'
 else:
-# Configure Eigen
-EIGEN_INCLUDE_DIR = os.getenv('EIGEN_INCLUDE_DIR')
-if sys.platform.startswith("win"):
-    if not EIGEN_INCLUDE_DIR:
-        raise RuntimeError("Eigen library not found. Please set the EIGEN_INCLUDE_DIR environment variable to the path of your Eigen installation.")
-    else:    
-        EIGEN_INCLUDE_DIR = EIGEN_INCLUDE_DIR or '/usr/include/eigen3'
+    # Configure Eigen
+    EIGEN_INCLUDE_DIR = os.getenv('EIGEN_INCLUDE_DIR')
+    if sys.platform.startswith("win"):
+        if not EIGEN_INCLUDE_DIR:
+            raise RuntimeError("Eigen library not found. Please set the EIGEN_INCLUDE_DIR environment variable to the path of your Eigen installation.")
+        else:
+            EIGEN_INCLUDE_DIR = EIGEN_INCLUDE_DIR or '/usr/include/eigen3'
 
     # Configure FMT
     FMT_INCLUDE_DIR = os.getenv('FMT_INCLUDE_DIR')
@@ -54,7 +54,7 @@ print(f'PYBIND11_INCLUDE_DIR = {PYBIND11_INCLUDE_DIR}')
 # Configure MKL
 ONEAPI_ROOT = os.getenv('ONEAPI_ROOT')
 if ONEAPI_ROOT:
-MKL_ROOT = f'{ONEAPI_ROOT}/mkl/latest'
+    MKL_ROOT = f'{ONEAPI_ROOT}/mkl/latest'
 else:
     MKL_ROOT = os.getenv('MKL_ROOT')
 if not MKL_ROOT:
@@ -121,4 +121,3 @@ setup(
     zip_safe=False,
     packages=['nervacolwise']
 )
-

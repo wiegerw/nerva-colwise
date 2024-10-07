@@ -3,6 +3,7 @@
 # (See accompanying file LICENSE or http://www.boost.org/LICENSE_1_0.txt)
 
 import re
+import time
 from typing import Union, Dict
 
 import numpy as np
@@ -10,7 +11,8 @@ import torch
 import time
 
 from nervalibcolwise import RandomNumberGenerator, set_num_threads, nerva_timer_enable, nerva_timer_disable, \
-    nerva_timer_suspend, nerva_timer_resume, nerva_timer_start, nerva_timer_stop, manual_seed, set_nerva_computation
+    nerva_timer_suspend, nerva_timer_resume, nerva_timer_start, nerva_timer_stop, manual_seed, set_nerva_computation, \
+    nerva_timer_print_report, nerva_timer_set_verbose
 
 
 class StopWatch(object):
@@ -151,4 +153,3 @@ def parse_function_call(text: str) -> FunctionCall:
         print(e)
         pass
     raise RuntimeError(f'Could not parse function call "{text}"')
-

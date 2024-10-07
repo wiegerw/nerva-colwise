@@ -2,7 +2,8 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE or http://www.boost.org/LICENSE_1_0.txt)
 
-from typing import List
+from typing import List, Optional
+
 import nervalibcolwise
 
 from nervacolwise.utilities import parse_function_call
@@ -10,14 +11,6 @@ from nervacolwise.utilities import parse_function_call
 
 class LearningRateScheduler(nervalibcolwise.learning_rate_scheduler):
     pass
-
-
-class ConstantScheduler(nervalibcolwise.constant_scheduler):
-    def __init__(self, lr: float):
-        super().__init__(lr)
-
-    def __str__(self):
-        return f'ConstantScheduler(lr={self.lr})'
 
 
 class TimeBasedScheduler(nervalibcolwise.time_based_scheduler):
@@ -52,12 +45,12 @@ class ExponentialScheduler(nervalibcolwise.exponential_scheduler):
         return f'ExponentialScheduler(lr={self.lr}, change_rate={self.change_rate})'
 
 
-def parse_learning_rate(text: str) -> LearningRateScheduler:
+def parse_learning_rate_scheduler(text: str) -> Optional[LearningRateScheduler]:
+    if not text:
+        return None
+
     func = parse_function_call(text)
-    if func.name == 'Constant':
-        lr = func.as_float('lr')
-        return ConstantScheduler(lr)
-    elif func.name == 'TimeBased':
+    if func.name == 'TimeBased':
         lr = func.as_float('lr')
         decay = func.as_float('decay')
         return TimeBasedScheduler(lr, decay)

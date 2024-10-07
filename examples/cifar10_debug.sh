@@ -8,7 +8,7 @@
     --optimizers="Nesterov(0.9)" \
     --loss=SoftmaxCrossEntropy \
     --learning-rate=0.01 \
-    --epochs=100 \
+    --epochs=1 \
     --batch-size=100 \
     --threads=12 \
     --overall-density=0.05 \

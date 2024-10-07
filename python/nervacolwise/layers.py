@@ -1,13 +1,14 @@
-# Copyright 2022 - 2023 Wieger Wesselink.
+# Copyright 2022 - 2024 Wieger Wesselink.
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE or http://www.boost.org/LICENSE_1_0.txt)
 
-from typing import Optional, List, Union, Tuple
+from typing import List, Union, Optional
 
-from nervacolwise.activation import Activation, NoActivation
-from nervacolwise.optimizers import Optimizer, GradientDescent
-from nervacolwise.weights import WeightInitializer, Xavier
 import nervalibcolwise
+
+from nervacolwise.activation_functions import Activation, NoActivation, parse_activation
+from nervacolwise.optimizers import Optimizer, GradientDescent, parse_optimizer
+from nervacolwise.weights import WeightInitializer, Xavier, parse_weight_initializer
 
 
 class Layer(object):
@@ -21,6 +22,7 @@ def print_activation(activation: Activation) -> str:
 
 
 class Dense(Layer):
+    # tag::dense_constructor[]
     def __init__(self,
                  input_size: int,
                  output_size: int,
@@ -29,6 +31,7 @@ class Dense(Layer):
                  weight_initializer: WeightInitializer=Xavier(),
                  dropout_rate: float=0
                 ):
+     # end::dense_constructor[]
         """
         A dense layer.
 
@@ -57,9 +60,10 @@ class Dense(Layer):
     def set_weights_and_bias(self, init: WeightInitializer) -> None:
         self._layer.set_weights_and_bias(str(init))
 
+    # tag::dense_compile[]
     def compile(self, batch_size: int):
         """
-        Compiles the model into a C++ object
+        Creates a C++ object for the layer.
 
         :param batch_size: the batch size
         :return:
@@ -71,7 +75,7 @@ class Dense(Layer):
             layer = nervalibcolwise.make_dense_linear_dropout_layer(self.input_size, self.output_size, batch_size, self.dropout_rate, activation, str(self.weight_initializer), str(self.optimizer))
         self._layer = layer
         return layer
-
+    # end::dense_compile[]
 
 class Sparse(Layer):
     def __init__(self,
@@ -79,8 +83,8 @@ class Sparse(Layer):
                  output_size: int,
                  density: float,
                  activation: Activation=NoActivation(),
-                 optimizer=GradientDescent(),
-                 weight_initializer=Xavier()):
+                 optimizer: Optimizer=GradientDescent(),
+                 weight_initializer: WeightInitializer=Xavier()):
         """
         A sparse layer.
 
@@ -151,15 +155,19 @@ class Sparse(Layer):
 
 
 class BatchNormalization(Layer):
+    # tag::batchnormalization_constructor[]
     def __init__(self,
                  input_size: int,
-                 output_size: int,
-                 optimizer: Optimizer
+                 output_size: Optional[int] = None,
+                 optimizer: Optimizer = GradientDescent()
                 ):
-        assert input_size == output_size
         self.input_size = input_size
         self.output_size = output_size
         self.optimizer = optimizer
+        if self.output_size is None:
+            self.output_size = self.input_size
+        assert self.output_size == self.input_size
+    # end::batchnormalization_constructor[]
 
     def compile(self, batch_size: int):
         layer = nervalibcolwise.make_batch_normalization_layer(self.input_size, batch_size, str(self.optimizer))
@@ -170,93 +178,68 @@ class BatchNormalization(Layer):
         return f'BatchNormalization(optimizer={self.optimizer})'
 
 
-# neural networks
-class Sequential(object):
-    def __init__(self, layers: Optional[Union[List[Layer], Tuple[Layer]]]=None):
-        self.layers = []
-        self.compiled_model = None
-        if layers:
-            for layer in layers:
-                self.add(layer)
-
-    def add(self, layer: Layer):
-        self.layers.append(layer)
-
-    def _check_layers(self):
-        """
-        Checks if the architecture of the layers is OK
-        """
-        # At least one layer
-        if not self.layers:
-            raise RuntimeError('No layers are defined')
-
-    def compile(self, batch_size: int) -> None:
-        self._check_layers()
-
-        M = nervalibcolwise.MLP()
-
-        # add layers
-        for i, layer in enumerate(self.layers):
-            cpp_layer = layer.compile(batch_size)
-            M.append_layer(cpp_layer)
-        self.compiled_model = M
-
-    def feedforward(self, X):
-        return self.compiled_model.feedforward(X)
-
-    def backpropagate(self, Y, dY):
-        return self.compiled_model.backpropagate(Y, dY)
-
-    def optimize(self, eta):
-        self.compiled_model.optimize(eta)
-
-    def renew_dropout_masks(self):
-        nervalibcolwise.renew_dropout_masks(self.compiled_model)
-
-    def __str__(self):
-        layers = ',\n  '.join([str(layer) for layer in self.layers])
-        return f'Sequential(\n  {layers}\n)'
-
-    def set_support_random(self):
-        for layer in self.layers:
-            if isinstance(layer, Sparse):
-                layer.set_support_random(layer.density)
-
-    def set_weights_and_bias(self, weight_initializers: List[WeightInitializer]):
-        print(f'Initializing weights using {", ".join(str(w) for w in weight_initializers)}')
-        self.compiled_model.set_weights_and_bias([str(w) for w in weight_initializers])
-
-    def load_weights_and_bias(self, filename: str):
-        """
-        Loads the weights and biases from a file in .npz format
-
-        The weight matrices are stored using the keys W1, W2, ... and the bias vectors using the keys "b1, b2, ..."
-        :param filename: the name of the file
-        """
-        print(f'Loading weights and bias from {filename}')
-        self.compiled_model.load_weights_and_bias(filename)
-
-    def save_weights_and_bias(self, filename: str):
-        """
-        Loads the weights and biases from a file in .npz format
-
-        The weight matrices are stored using the keys W1, W2, ... and the bias vectors using the keys "b1, b2, ..."
-        :param filename: the name of the file
-        """
-        print(f'Saving weights and bias to {filename}')
-        self.compiled_model.save_weights_and_bias(filename)
-
-    def info(self, msg):
-        self.compiled_model.info(msg)
+def make_linear_layer(input_size: int,
+                      output_size: int,
+                      density: float,
+                      dropout_rate: float,
+                      activation: Activation,
+                      weight_initializer: WeightInitializer,
+                      optimizer: Optimizer
+                     ) -> Union[Dense, Sparse]:
+    if density == 1.0:
+        return Dense(input_size,
+                     output_size,
+                     activation=activation,
+                     optimizer=optimizer,
+                     weight_initializer=weight_initializer,
+                     dropout_rate=dropout_rate)
+    else:
+        return Sparse(input_size,
+                      output_size,
+                      density,
+                      activation=activation,
+                      optimizer=optimizer,
+                      weight_initializer=weight_initializer)
 
 
-def compute_sparse_layer_densities(overall_density: float, layer_sizes: List[int], erk_power_scale: float=1) -> List[float]:
-    return nervalibcolwise.compute_sparse_layer_densities(overall_density, layer_sizes, erk_power_scale)
+def make_layers(layer_specifications: list[str],
+                linear_layer_sizes: list[int],
+                linear_layer_densities: list[float],
+                linear_layer_dropouts: list[float],
+                linear_layer_weights: list[str],
+                optimizers: list[str]
+               ) -> List[Layer]:
 
+    assert len(linear_layer_densities) == len(linear_layer_dropouts) == len(linear_layer_weights) == len(linear_layer_sizes) - 1
+    assert len(optimizers) == len(layer_specifications)
 
-def print_model_info(M: Sequential) -> None:
-    """
-    Prints detailed information about a multilayer perceptron
-    :param M: a multilayer perceptron
-    """
-    nervalibcolwise.print_model_info(M.compiled_model)
+    linear_layer_weights = [parse_weight_initializer(x) for x in linear_layer_weights]
+    optimizers = [parse_optimizer(x) for x in optimizers]
+
+    result = []
+
+    linear_layer_index = 0
+    optimizer_index = 0
+    input_size = linear_layer_sizes[0]
+
+    for spec in layer_specifications:
+        if spec == "BatchNormalization":
+            output_size = input_size
+            optimizer = optimizers[optimizer_index]
+            optimizer_index += 1
+            blayer = BatchNormalization(input_size, output_size, optimizer)
+            result.append(blayer)
+        else:  # linear spec
+            output_size = linear_layer_sizes[linear_layer_index + 1]
+            density = linear_layer_densities[linear_layer_index]
+            dropout_rate = linear_layer_dropouts[linear_layer_index]
+            activation = parse_activation(spec)
+            weights = linear_layer_weights[linear_layer_index]
+            optimizer = optimizers[optimizer_index]
+            linear_layer_index += 1
+            optimizer_index += 1
+            llayer = make_linear_layer(input_size, output_size, density, dropout_rate, activation, weights, optimizer)
+            result.append(llayer)
+        input_size = output_size
+
+    return result

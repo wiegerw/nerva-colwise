@@ -4,10 +4,10 @@
 
 from typing import Optional, List, Union, Tuple
 
-import nervalibrowwise
+import nervalibcolwise
 
-from nerva.layers import Layer, Sparse
-from nerva.weights import WeightInitializer
+from nervacolwise.layers import Layer, Sparse
+from nervacolwise.weights import WeightInitializer
 
 
 class MultilayerPerceptron(object):
@@ -34,7 +34,7 @@ class MultilayerPerceptron(object):
     def compile(self, batch_size: int) -> None:
         self._check_layers()
 
-        M = nervalibrowwise.MLP()
+        M = nervalibcolwise.MLP()
 
         # add layers
         for i, layer in enumerate(self.layers):
@@ -52,7 +52,7 @@ class MultilayerPerceptron(object):
         self._model.optimize(eta)
 
     def renew_dropout_masks(self):
-        nervalibrowwise.renew_dropout_masks(self._model)
+        nervalibcolwise.renew_dropout_masks(self._model)
 
     def __str__(self):
         layers = ',\n  '.join([str(layer) for layer in self.layers])
@@ -92,7 +92,7 @@ class MultilayerPerceptron(object):
 
 
 def compute_sparse_layer_densities(overall_density: float, layer_sizes: List[int], erk_power_scale: float=1) -> List[float]:
-    return nervalibrowwise.compute_sparse_layer_densities(overall_density, layer_sizes, erk_power_scale)
+    return nervalibcolwise.compute_sparse_layer_densities(overall_density, layer_sizes, erk_power_scale)
 
 
 def print_model_info(M: MultilayerPerceptron) -> None:
@@ -100,4 +100,4 @@ def print_model_info(M: MultilayerPerceptron) -> None:
     Prints detailed information about a multilayer perceptron
     :param M: a multilayer perceptron
     """
-    nervalibrowwise.print_model_info(M._model)
+    nervalibcolwise.print_model_info(M._model)

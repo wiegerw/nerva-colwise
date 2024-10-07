@@ -7,8 +7,8 @@
 import re
 from typing import List
 
-from nerva.layers import Sparse
-from nerva.multilayer_perceptron import MultilayerPerceptron
+from nervacolwise.layers import Sparse
+from nervacolwise.multilayer_perceptron import MultilayerPerceptron
 
 
 def parse_arguments(text: str, name: str, n: int) -> List[str]:

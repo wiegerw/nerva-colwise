@@ -4,10 +4,10 @@
 # Distributed under the Boost Software License, Version 1.0.
 # (See accompanying file LICENSE or http://www.boost.org/LICENSE_1_0.txt)
 
-from nerva.grow import GrowFunction
-from nerva.layers import Sparse
-from nerva.multilayer_perceptron import MultilayerPerceptron
-from nerva.prune import PruneFunction
+from nervacolwise.grow import GrowFunction
+from nervacolwise.layers import Sparse
+from nervacolwise.multilayer_perceptron import MultilayerPerceptron
+from nervacolwise.prune import PruneFunction
 
 
 class RegrowFunction(object):
