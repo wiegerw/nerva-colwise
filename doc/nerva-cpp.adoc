@@ -1,4 +1,4 @@
-= Nerva-rowwise C++ manual
+= Nerva-colwise C++ manual
 :copyright: Copyright 2024 Wieger Wesselink
 :author: Wieger Wesselink
 :email: j.w.wesselink@tue.nl
@@ -30,6 +30,11 @@ endif::[]
 
 == Introduction
 This document describes the implementation of the {library}. In earlier versions, I relied heavily on lecture notes from https://www.cs.toronto.edu/~rgrosse/teaching.html[machine learning courses by Roger Grosse], which I highly recommend. This influence may still be evident in the naming of symbols.
+
+=== Difference with the Nerva-Rowwise C++ library
+The {library} can be viewed as the dual of the https://github.com/wiegerw/nerva-rowwise[Nerva-Rowwise {cpp} Library]. The main difference between the two is that the {library} assumes that examples of a dataset are stored in the columns of a matrix, while the Nerva-Rowwise C++ Library assumes that the examples are stored in the rows of a matrix. The work on the Nerva libraries started with the column-wise version. From a mathematical point of view this makes sense, since if the input stem:[x] is a column vector, the equation of a linear layer can be written as stem:[y = W x + b], which is common in linear algebra. However, later it turned out that this choice causes subtle problems for the compatibility with existing frameworks like PyTorch, TensorFlow and JAX. Due to this a switch has been made to the row-wise version. In this version, the equation of a linear layer is given by stem:[y = x^\top W + b].
+
+Obviously, the Nerva-Colwise and Nerva-Rowwise libraries share a lot of code. But in particular, the mathematical equations of the layers, softmax functions and loss functions are different.
 
 === Installation
 The following build systems are supported:
@@ -932,7 +937,7 @@ Using this table leads to concise and uniform code. For example, the backpropaga
 ----
 include::../include/nerva/neural_networks/layers.h[tag=matrix_operations]
 ----
-See the specification document https://wiegerw.github.io/nerva-colwise/pdf/nerva-library-specifications.pdf[Nerva library specifications] for an overview of how these matrix operations are used.
+See the specification document https://wiegerw.github.io/nerva-rowwise/pdf/nerva-library-specifications.pdf[Nerva library specifications] for an overview of how these matrix operations are used.
 
 === Eigen library
 The {library} uses the https://eigen.tuxfamily.org/[Eigen library] for representing matrices. The matrix operations in table <<table_matrix_operations>> have been implemented using Eigen, see the file https://github.com/wiegerw/nerva-colwise/blob/main/include/nerva/neural_networks/matrix_operations.h[matrix_operations.h].
