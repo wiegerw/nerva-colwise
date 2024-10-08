@@ -8,7 +8,7 @@
 <meta name="description" content="Documentation for the nerva-colwise repository.">
 <meta name="author" content="Wieger Wesselink">
 <meta name="copyright" content="Copyright 2024 Wieger Wesselink">
-<title>Nerva-rowwise C++ manual</title>
+<title>Nerva-colwise C++ manual</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,300italic,400,400italic,600,600italic%7CNoto+Serif:400,400italic,700,700italic%7CDroid+Sans+Mono:400,700">
 <style>
 /*! Asciidoctor default stylesheet | MIT License | https://asciidoctor.org */
@@ -558,7 +558,7 @@ pre.rouge .gs {
 </head>
 <body id="demo" class="book toc2 toc-left">
 <div id="header">
-<h1>Nerva-rowwise C++ manual</h1>
+<h1>Nerva-colwise C++ manual</h1>
 <div class="details">
 <span id="author" class="author">Wieger Wesselink</span><br>
 <span id="email" class="email"><a href="mailto:j.w.wesselink@tue.nl">j.w.wesselink@tue.nl</a></span><br>
@@ -568,6 +568,7 @@ pre.rouge .gs {
 <ul class="sectlevel1">
 <li><a href="#_introduction">Introduction</a>
 <ul class="sectlevel2">
+<li><a href="#_difference_with_the_nerva_rowwise_c_library">Difference with the Nerva-Rowwise C++ library</a></li>
 <li><a href="#_installation">Installation</a></li>
 </ul>
 </li>
@@ -633,6 +634,15 @@ pre.rouge .gs {
 <div class="sectionbody">
 <div class="paragraph">
 <p>This document describes the implementation of the <em>Nerva-Colwise C++ Library</em>. In earlier versions, I relied heavily on lecture notes from <a href="https://www.cs.toronto.edu/~rgrosse/teaching.html">machine learning courses by Roger Grosse</a>, which I highly recommend. This influence may still be evident in the naming of symbols.</p>
+</div>
+<div class="sect2">
+<h3 id="_difference_with_the_nerva_rowwise_c_library">Difference with the Nerva-Rowwise C++ library</h3>
+<div class="paragraph">
+<p>The <em>Nerva-Colwise C++ Library</em> can be viewed as the dual of the <a href="https://github.com/wiegerw/nerva-rowwise">Nerva-Rowwise C&#43;&#43; Library</a>. The main difference between the two is that the <em>Nerva-Colwise C++ Library</em> assumes that examples of a dataset are stored in the columns of a matrix, while the Nerva-Rowwise C++ Library assumes that the examples are stored in the rows of a matrix. The work on the Nerva libraries started with the column-wise version. From a mathematical point of view this makes sense, since if the input \(x\) is a column vector, the equation of a linear layer can be written as \(y = W x + b\), which is common in linear algebra. However, later it turned out that this choice causes subtle problems for the compatibility with existing frameworks like PyTorch, TensorFlow and JAX. Due to this a switch has been made to the row-wise version. In this version, the equation of a linear layer is given by \(y = x^\top W + b\).</p>
+</div>
+<div class="paragraph">
+<p>Obviously, the Nerva-Colwise and Nerva-Rowwise libraries share a lot of code. But in particular, the mathematical equations of the layers, softmax functions and loss functions are different.</p>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_installation">Installation</h3>
@@ -2276,7 +2286,7 @@ total time           = 8.3089</pre>
 </div>
 </div>
 <div class="paragraph">
-<p>See the specification document <a href="https://wiegerw.github.io/nerva-colwise/pdf/nerva-library-specifications.pdf">Nerva library specifications</a> for an overview of how these matrix operations are used.</p>
+<p>See the specification document <a href="https://wiegerw.github.io/nerva-rowwise/pdf/nerva-library-specifications.pdf">Nerva library specifications</a> for an overview of how these matrix operations are used.</p>
 </div>
 <div class="sect2">
 <h3 id="_eigen_library">Eigen library</h3>
@@ -2740,7 +2750,7 @@ The <a href="https://github.com/wiegerw/nerva-sympy">nerva-sympy</a> repository 
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2024-10-07 14:34:46 UTC
+Last updated 2024-10-08 15:16:11 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
