@@ -22,7 +22,7 @@ The `nerva-colwise` library has the following features:
 The documentation consists of three parts:
 * A [C++ manual](https://wiegerw.github.io/nerva-colwise/doc/nerva-cpp.html) that explains the implementation.
 * A [Python manual](https://wiegerw.github.io/nerva-colwise/doc/nerva-python.html) that explains the `nerva` Python module.
-* A PDF with [mathematical specifications](https://wiegerw.github.io/nerva-rowwise/pdf/nerva-libraries-implementation.pdf) of key components of the Nerva Library.
+* A PDF with [mathematical specifications](https://wiegerw.github.io/nerva-rowwise/pdf/nerva-library-specifications.pdf) of key components of the Nerva Library.
 
 The following papers about Nerva are available:
 
